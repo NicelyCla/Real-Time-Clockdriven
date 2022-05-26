@@ -31,3 +31,6 @@
 *.out
 *.app
 
+application-err_ap
+application-err_p
+application-ok
