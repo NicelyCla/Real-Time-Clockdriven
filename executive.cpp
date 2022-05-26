@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "executive.h"
+#include <ctime>
 
 #define DEBUG
 
@@ -14,7 +15,7 @@ void Executive::set_periodic_task(size_t task_id, std::function<void()> periodic
 	//Prima funzione eseguita
 	//std::cout << "set_periodic_task" << std::endl;
 	assert(task_id < p_tasks.size()); // Fallisce in caso di task_id non corretto (fuori range)
-	
+
 	p_tasks[task_id].function = periodic_task;
 	p_tasks[task_id].wcet = wcet;
 }
@@ -24,7 +25,7 @@ void Executive::set_aperiodic_task(std::function<void()> aperiodic_task, unsigne
  	ap_task.function = aperiodic_task;
  	ap_task.wcet = wcet;
 }
-		
+
 void Executive::add_frame(std::vector<size_t> frame)
 {
 	//Seconda funzione eseguita
@@ -32,7 +33,7 @@ void Executive::add_frame(std::vector<size_t> frame)
 
 	for (auto & id: frame)
 		assert(id < p_tasks.size()); // Fallisce in caso di task_id non corretto (fuori range)
-	
+
 	frames.push_back(frame);
 
 	/* ... */
@@ -46,9 +47,9 @@ void Executive::run()
 	for (size_t id = 0; id < p_tasks.size(); ++id)
 	{
 		assert(p_tasks[id].function); // Fallisce se set_periodic_task() non e' stato invocato per questo id
-		
+
 		p_tasks[id].thread = std::thread(&Executive::task_function, std::ref(p_tasks[id]));
-		
+
 		/* ... */
 
 		rt::set_affinity(p_tasks[id].thread, af);
@@ -60,11 +61,11 @@ void Executive::run()
 		}
 		--prio;
 	}
-	
+
 	//assert(ap_task.function); // Fallisce se set_aperiodic_task() non e' stato invocato
-	
+
 	//ap_task.thread = std::thread(&Executive::task_function, std::ref(ap_task));
-	
+
 	//imposto la priorità massima all'executive e l'affinity 1 (lavoreranno su un processore)
 	std::thread exec_thread(&Executive::exec_function, this);
 	rt::set_affinity(exec_thread, af);
@@ -79,13 +80,13 @@ void Executive::run()
 		exec_thread.detach();
 	}
 
-	
+
 	/* ... */
-	
+
 	exec_thread.join();
-	
+
 	//ap_task.thread.join();
-	
+
 	for (auto & pt: p_tasks)
 		pt.thread.join();
 }
@@ -103,15 +104,14 @@ void Executive::task_function(Executive::task_data & task)
 	while (true) {
 		task.my_status = PENDING;						// PENDING : task pronto per l'esecuzione
 		// wait for activation
-		while (task.my_status == PENDING)				
+		while (task.my_status == PENDING)
 			task.cond.wait(l);
-
-		task.function();								// RUNNING : task in esecuzione 
+		task.function();								// RUNNING : task in esecuzione
 
 		task.my_status = IDLE;							// IDLE : task non ancora pronto
 
 	}
-	
+
 }
 
 void Executive::exec_function()
@@ -121,6 +121,7 @@ void Executive::exec_function()
 
 	//imposto il clock dell'executive
 	auto point = std::chrono::steady_clock::now();
+	auto base_point = std::chrono::high_resolution_clock::now();;
 
 	while (true)
 	{
@@ -136,23 +137,30 @@ void Executive::exec_function()
 		std::cout << "Frame " << frame_id << ":" << std::endl;
 		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 			if(p_tasks[frames[frame_id][i]].my_status == PENDING){
+				auto checkpoint = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
+				std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count()<< std::endl;
 
 				p_tasks[frames[frame_id][i]].my_status = RUNNING;			// Metto il task nello stato di RUNNING
 				p_tasks[frames[frame_id][i]].cond.notify_one();				// Notifico il task
-
 
 			}
 
 		}
 
-				
+
 		/* Attesa fino al prossimo inizio frame ... */
 		point += std::chrono::milliseconds(frame_length * unit_time); //imposta ogni quanti millisecondisecondi deve ripetersi
 		std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
 
-		
+
 		/* Controllo delle deadline ... */
-		
+		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
+			if(p_tasks[frames[frame_id][i]].my_status == RUNNING){
+				p_tasks[frames[frame_id][i]].my_status = IDLE;
+			}
+		}
+
 		if (++frame_id == frames.size())
 			frame_id = 0;
 
@@ -165,6 +173,3 @@ void Executive::exec_function()
 
 	}
 }
-
-
-
