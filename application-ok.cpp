@@ -1,7 +1,7 @@
 #include "executive.h"
 #include "busy_wait.h"
 
-//#define BUSY_WAIT_GENERATION
+#define BUSY_WAIT_GENERATION
 #define START_TASK
 //#define DEBUG
 
@@ -20,7 +20,7 @@ void task0()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(8);
+	busy_wait(80);
 	#endif
 
 	#ifdef DEBUG
