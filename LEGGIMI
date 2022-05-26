@@ -1,0 +1,39 @@
+Cosa c'è dentro lo pseudo codice da cui partire?
+La parte principale dell'applicazione è composta da questi due file:
+* executive che è la classe che dobbiamo realizzare, dove ci sono alcune cose già implementate e soprattutto c'è un interfaccia, non tocchiamo l'interfaccia (.h). Cioè i metodi che ci sono nella parte pubblica non vanno toccati. La parte .cpp è piena di punti in cui ci va scritto.
+
+* application-*.cpp sono il nostro main e sono l'esempio di come questo oggetto (executive) andrebbe utilizzato. Come variabile globali abbiamo un oggetto Executive exec(5, 4);
+Il main non fa altro che inizializzare l'executive ecc... ecc...
+
+Noi dobbiamo passare all'executive le informazioni per cui possa far funzionare le applicazioni.
+
+Dettaglio che nel codice non si vede, dobbiamo dare al task delle funzioni da eseguire:
+L'executive deve far eseguire le funzioni task0(), task1(), ... , task4() e ap_task() nel momento giusto in cui deve essere rilasciato il singolo task.
+
+l'application-ok fa vedere il comportamento corretto.
+l'application-err_p fa vedere il comportamento quando c'è una deadline miss in uno o qualche task periodico.
+l'application-err_ap fa vedere il comportamento quando c'è una deadline miss nel task aperiodico.
+
+la busy_wait è da ignorare, sostanzialmente ci serve solo per fare una deadline miss, non è stato impletamentato con una sleep.
+
+I punti in cui bisogna inserire cose sono indicati, ma è possibile modificare un po' ovunque.
+
+Da dove partiamo? Daje che si inizia:
+L'unica cosa di cui si preoccupa l'executive è di mettere in esecuzione quei task come gli vengono chiesti. Quindi l'input dell'executive si risolve in una sequenza di task da eseguire, che vanno da 0 a n-1.
+Cerchiamo di fare le minori assunzioni possibili, per esempio non è mai detto che i task devono essere eseguiti in ordine da 0 a n-1.
+Executive::Executive(size_t num_tasks, unsigned int frame_length, unsigned int unit_duration)
+unit_duration è nascosto, se non lo si imposta di default vale 10, cioè una casellina di tempo vale 10 millisecondi.
+frame_length è la lunghezza del frame in unit_duration (10)
+Implicitamente, andare a definire quanti sono i frami costruendo i frame così mi da anche l'iperperiodo (quanto è grosso ogni frame), quindi 5 task, * 4 lunghezza = 20 iperperiodo.
+
+Quindi per funzionare devo:
+passargli il codice deti task, quindi le funzioni (task0,...,task4) con set_periodic_task, mettere tanti righe quanti sono i task, passare come andare ad eseguirli nei vari frame, quindi tramite add_frame
+
+set_periodic_task passa le funzioni, l'oggetto funzione, quindi:
+Infatti faccio una serie di set, ad esempio, gli dico:
+guarda che "0" corrisponde alla funzione "task0"
+guarda che "1" corrisponde alla funzione "task1"
+ecc... 
+
+Le funzioni add_frame ci dice come andare ad eseguirli nei vari frame.
+
