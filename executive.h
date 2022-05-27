@@ -29,13 +29,13 @@ class Executive
 			wcet: tempo di esecuzione di caso peggiore (in quanti temporali).
 		*/
 		void set_periodic_task(size_t task_id, std::function<void()> periodic_task, unsigned int wcet);
-		
+
 		/* Imposta il task aperiodico (da invocare durante la creazione dello schedule):
 			aperiodic_task: funzione da eseguire al rilascio del task;
 			wcet: tempo di esecuzione di caso peggiore (in quanti temporali).
 		*/
 		void set_aperiodic_task(std::function<void()> aperiodic_task, unsigned int wcet);
-		
+
 		/* Lista di task da eseguire in un dato frame (da invocare durante la creazione dello schedule):
 			frame: lista degli id corrispondenti ai task da eseguire nel frame, in sequenza
 		*/
@@ -43,7 +43,7 @@ class Executive
 
 		/* Esegue l'applicazione */
 		void run();
-		
+
 		/* Richiede il rilascio del task aperiodico (da invocare durante l'esecuzione).
 		*/
 		void ap_task_request();
@@ -55,8 +55,7 @@ class Executive
 			std::function<void()> function;
 
 			std::condition_variable cond;
-			std::mutex mutex;
-			
+
 			unsigned int wcet;
 			thread_status my_status;
 
@@ -65,20 +64,21 @@ class Executive
 
 			/* ... */
 		};
-		
+		std::mutex mutex;
+
 		std::vector<task_data> p_tasks;
 		task_data ap_task;
-		
+
 		std::vector< std::vector<size_t> > frames;
-		
-		
+
+
 		const unsigned int frame_length; // lunghezza del frame (in quanti temporali)
 		const std::chrono::milliseconds unit_time; // durata dell'unita di tempo (quanto temporale)
-		
+
 		/* ... */
-		
-		static void task_function(task_data & task);
-		
+
+		static void task_function(task_data & task, std::mutex &mtx);
+
 		void exec_function();
 };
 

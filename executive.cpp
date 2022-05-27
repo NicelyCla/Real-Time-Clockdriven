@@ -48,7 +48,7 @@ void Executive::run()
 	{
 		assert(p_tasks[id].function); // Fallisce se set_periodic_task() non e' stato invocato per questo id
 
-		p_tasks[id].thread = std::thread(&Executive::task_function, std::ref(p_tasks[id]));
+		p_tasks[id].thread = std::thread(&Executive::task_function, std::ref(p_tasks[id]), std::ref(mutex));
 
 		/* ... */
 
@@ -96,12 +96,11 @@ void Executive::ap_task_request()
 	/* ... */
 }
 
-void Executive::task_function(Executive::task_data & task)
+void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 {
-	std::unique_lock<std::mutex> l(task.mutex);
-	task.my_status = IDLE;								// IDLE : task non ancora pronto
 
 	while (true) {
+		std::unique_lock<std::mutex> l(mtx);
 		task.my_status = PENDING;						// PENDING : task pronto per l'esecuzione
 		// wait for activation
 		while (task.my_status == PENDING)
@@ -137,7 +136,7 @@ void Executive::exec_function()
 		std::cout << "Frame " << frame_id << ":" << std::endl;
 		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 			if(p_tasks[frames[frame_id][i]].my_status == PENDING){
-				
+
 				auto checkpoint = std::chrono::high_resolution_clock::now();
 				std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
 				std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count()<< std::endl;
@@ -160,7 +159,7 @@ void Executive::exec_function()
 
 		if (++frame_id == frames.size())
 			frame_id = 0;
-		
+
 		std::cout << "-> Controllo rispetto deadline nel frame precedente:" << std::endl;
 
 		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {

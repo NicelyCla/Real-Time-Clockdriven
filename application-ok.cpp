@@ -1,7 +1,7 @@
 #include "executive.h"
 #include "busy_wait.h"
 
-#define BUSY_WAIT_GENERATION
+//#define BUSY_WAIT_GENERATION
 #define START_TASK
 //#define DEBUG
 
@@ -143,17 +143,17 @@ int main()
 	exec.set_periodic_task(3, task3, 3); // tau_3,2
 	exec.set_periodic_task(4, task4, 1); // tau_3,3
 	/* ... */
-	
+
 	//exec.set_aperiodic_task(ap_task, 2);
-	
+
 	exec.add_frame({0,1,2});
 	exec.add_frame({0,3});
 	exec.add_frame({0,1});
 	exec.add_frame({0,1});
 	exec.add_frame({0,1,4});
 	/* ... */
-	
+
 	exec.run();
-	
+
 	return 0;
 }
