@@ -1,7 +1,7 @@
 #include "executive.h"
 #include "busy_wait.h"
 
-//#define BUSY_WAIT_GENERATION
+#define BUSY_WAIT_GENERATION
 #define START_TASK
 //#define DEBUG
 
@@ -10,9 +10,7 @@ Executive exec(5, 4);
 void task0()
 {
 	#ifdef START_TASK
-	std::ostringstream os;
-	os << "- Task 0" << std::endl;
-	std::cout << os.str();
+	std::cout << "- Task 0 inizio esecuzione" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -20,8 +18,10 @@ void task0()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(80);
+	busy_wait(78);
 	#endif
+
+	std::cout << "- Task 0 termina esecuzione" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -33,9 +33,7 @@ void task0()
 void task1()
 {
 	#ifdef START_TASK
-	std::ostringstream os;
-	os << "- Task 1" << std::endl;
-	std::cout << os.str();
+	std::cout << "- Task 1 inizio esecuzione" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -43,8 +41,10 @@ void task1()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(18);
+	busy_wait(28);
 	#endif
+
+	std::cout << "- Task 1 termina esecuzione" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -56,9 +56,7 @@ void task1()
 void task2()
 {
 	#ifdef START_TASK
-	std::ostringstream os;
-	os << "- Task 2" << std::endl;
-	std::cout << os.str();
+	std::cout << "- Task 2 inizio esecuzione" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -68,6 +66,8 @@ void task2()
 	#ifdef BUSY_WAIT_GENERATION
 	busy_wait(8);
 	#endif
+
+	std::cout << "- Task 2 termina esecuzione" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -79,9 +79,7 @@ void task2()
 void task3()
 {
 	#ifdef START_TASK
-	std::ostringstream os;
-	os << "- Task 3" << std::endl;
-	std::cout << os.str();
+	std::cout << "- Task 3 inizio esecuzione" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -92,9 +90,7 @@ void task3()
 	busy_wait(10);
 	#endif
 
-	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(18);
-	#endif
+	std::cout << "- Task 3 termina esecuzione" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -106,9 +102,7 @@ void task3()
 void task4()
 {
 	#ifdef START_TASK
-	std::ostringstream os;
-	os << "- Task 4" << std::endl;
-	std::cout << os.str();;
+	std::cout << "- Task 4 inizio esecuzione" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -118,6 +112,8 @@ void task4()
 	#ifdef BUSY_WAIT_GENERATION
 	busy_wait(8);
 	#endif
+
+	std::cout << "- Task 4 termina esecuzione" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
