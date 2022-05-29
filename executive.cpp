@@ -49,7 +49,7 @@ void Executive::run()
 		assert(p_tasks[id].function); // Fallisce se set_periodic_task() non e' stato invocato per questo id
 
 		p_tasks[id].thread = std::thread(&Executive::task_function, std::ref(p_tasks[id]), std::ref(mutex));
-
+		p_tasks[id].my_status = IDLE;
 		/* ... */
 
 		rt::set_affinity(p_tasks[id].thread, af);
@@ -99,15 +99,21 @@ void Executive::ap_task_request()
 void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 {
 	while (true) {
-		std::unique_lock<std::mutex> l(mtx);
 		{
-			task.my_status = PENDING;						// PENDING : task pronto per l'esecuzione
-			while (task.my_status == PENDING)
+			std::unique_lock<std::mutex> l(mtx);
+			//task.my_status = IDLE;							// IDLE : task non ancora pronto
+
+			while (task.my_status == IDLE)
 				task.cond.wait(l);
+			//task.my_status = RUNNING;
+	
 		}
-	//std::cout << " Esecuzione n: " << count << std::endl;
-	task.function();								// RUNNING : task in esecuzione
-	task.my_status = IDLE;							// IDLE : task non ancora pronto
+		
+		//std::cout << " Esecuzione n: " << count << std::endl;
+		//task.my_status = RUNNING;
+		task.function();								// RUNNING : task in esecuzione
+		task.my_status = IDLE;							// IDLE : task non ancora pronto
+
 	}
 }
 
@@ -132,19 +138,23 @@ void Executive::exec_function()
 		//frame 0 istante 0 -> rilascio 0
 		
 		{
-			
-			std::cout << "Frame " << frame_id << ":" << std::endl;
 			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
+			std::cout << "Frame " << frame_id << ":" << std::endl;
 
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 				
-				if(p_tasks[frames[frame_id][i]].my_status == PENDING){
+				if(p_tasks[frames[frame_id][i]].my_status == IDLE){
+					if (rt::get_priority(p_tasks[frames[frame_id][i]].thread) == rt::priority::rt_min ){
+						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //setto la priorità del task con deadline miss al minimo in modo da non intaccare l'esecuzione degli altri task
+					}
 					auto checkpoint = std::chrono::high_resolution_clock::now();
 					std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
 					std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count()<< std::endl;
 
-					p_tasks[frames[frame_id][i]].my_status = RUNNING;			// Metto il task nello stato di RUNNING
+					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Metto il task nello stato di RUNNING
 					p_tasks[frames[frame_id][i]].cond.notify_one();				// Notifico il task
+					p_tasks[frames[frame_id][i]].my_status = RUNNING;
+
 					//std::cout << "La priorità del task " << frames[frame_id][i] << ": " << rt::get_priority(p_tasks[frames[frame_id][i]].thread) <<std::endl;
 				}	
 			}
@@ -173,7 +183,7 @@ void Executive::exec_function()
 				std::cout << "   Task " << frames[frame_id_prec][i] <<" Deadline Miss: " << std::endl;
 
 				try {
-					rt::set_priority(p_tasks[frames[frame_id_prec][i]].thread, rt::priority::rt_min); //setto la priorità del task con deadline miss al minimo in modo da non intaccare l'esecuzione degli altri task
+					rt::set_priority(p_tasks[frames[frame_id_prec][i]].thread, rt::priority::rt_min + frames[frame_id][i]); //setto la priorità del task con deadline miss al minimo in modo da non intaccare l'esecuzione degli altri task
 					//std::cout<<"ho messo priorità minima"<<std::endl;
 				}
 				catch(rt::permission_error & e) {

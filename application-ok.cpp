@@ -41,7 +41,7 @@ void task1()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(28);
+	busy_wait(18);
 	#endif
 
 	std::cout << "- Task 1 termina esecuzione" << std::endl;
@@ -64,7 +64,7 @@ void task2()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(8);
+	busy_wait(9);
 	#endif
 
 	std::cout << "- Task 2 termina esecuzione" << std::endl;
@@ -87,7 +87,7 @@ void task3()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(10);
+	busy_wait(9);
 	#endif
 
 	std::cout << "- Task 3 termina esecuzione" << std::endl;
@@ -110,7 +110,7 @@ void task4()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(8);
+	busy_wait(9);
 	#endif
 
 	std::cout << "- Task 4 termina esecuzione" << std::endl;
