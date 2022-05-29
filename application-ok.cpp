@@ -18,7 +18,7 @@ void task0()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(78);
+	busy_wait(9);
 	#endif
 
 	std::cout << "- Task 0 termina esecuzione" << std::endl;

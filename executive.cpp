@@ -17,7 +17,7 @@ void Executive::set_periodic_task(size_t task_id, std::function<void()> periodic
 	assert(task_id < p_tasks.size()); // Fallisce in caso di task_id non corretto (fuori range)
 
 	p_tasks[task_id].function = periodic_task;
-	p_tasks[task_id].wcet = wcet;
+	p_tasks[task_id].wcet = wcet * unit_time.count();
 }
 
 void Executive::set_aperiodic_task(std::function<void()> aperiodic_task, unsigned int wcet)
@@ -121,7 +121,7 @@ void Executive::exec_function()
 {
 	unsigned int frame_id = 0;
 	unsigned int frame_id_prec = 0;
-	unsigned int slack_time = 10;
+	unsigned int slack_time = 0;
 
 	/* ... */
 
@@ -145,12 +145,15 @@ void Executive::exec_function()
 				
 				if(p_tasks[frames[frame_id][i]].my_status == IDLE){
 					if (rt::get_priority(p_tasks[frames[frame_id][i]].thread) == rt::priority::rt_min ){
-						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //setto la priorità del task con deadline miss al minimo in modo da non intaccare l'esecuzione degli altri task
+						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //riacquisisco la priorità
 					}
+					slack_time+=p_tasks[frames[frame_id][i]].wcet;
+
 					auto checkpoint = std::chrono::high_resolution_clock::now();
 					std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
-					std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count()<< std::endl;
-
+					std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count() << std::endl;
+					//std::cout << "    WCETTONE NAZIONALE: " << p_tasks[frames[frame_id][i]].wcet <<std::endl;
+					
 					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Metto il task nello stato di RUNNING
 					p_tasks[frames[frame_id][i]].cond.notify_one();				// Notifico il task
 					p_tasks[frames[frame_id][i]].my_status = RUNNING;
@@ -158,7 +161,11 @@ void Executive::exec_function()
 					//std::cout << "La priorità del task " << frames[frame_id][i] << ": " << rt::get_priority(p_tasks[frames[frame_id][i]].thread) <<std::endl;
 				}	
 			}
+			slack_time = frame_length * unit_time.count() - slack_time;
+
 		}
+		std::cout << "slaccone nazionale: " << slack_time <<std::endl;
+
 
 
 		/* Attesa fino al prossimo inizio frame ... */
@@ -167,8 +174,10 @@ void Executive::exec_function()
 
 		/* Controllo delle deadline ... */
 
-		if (++frame_id == frames.size())
+		if (++frame_id == frames.size()){
 			frame_id = 0;
+		}
+		slack_time = 0;
 
 		std::cout << "-> Controllo rispetto deadline nel frame precedente:" << std::endl;
 		if (frame_id != 0){
