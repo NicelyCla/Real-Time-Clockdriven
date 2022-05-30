@@ -6,12 +6,14 @@
 //#define DEBUG
 
 Executive exec(5, 4);
-/*
+
 std::random_device rd;							// inizializzazione
 std::mt19937 gen(rd());							// generatore 
 std::uniform_int_distribution<> dis(0, 4);		// random
 unsigned int rand_gen = (int) dis(gen);			//
-*/
+unsigned int count = 0;							//
+
+
 
 void task0()
 {
@@ -27,8 +29,19 @@ void task0()
 	busy_wait(78);
 	#endif
 
-	std::cout << "- Task 0 termina esecuzione" << std::endl;
+	// Decommentare uno dei due "if".
+	if(++count % 2 != 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
+	//if(++count == rand_gen) {						// ap_ task lanciato in modo randomico;
+		std::cout << "	Lancio ap_task_request() in modo random " << std::endl;
 
+		exec.ap_task_request();
+		rand_gen = dis(gen);						// random cambia ad ogni esecuzione di ap_task;
+		count = 0;
+
+		std::cout << "	Prossimo lancio generato in modo random[rand_gen]: " << rand_gen << std::endl;
+	}
+
+	std::cout << "- Task 0 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> elapsed(stop - start);
@@ -39,7 +52,7 @@ void task0()
 void task1()
 {
 	#ifdef START_TASK
-	std::cout << "- Task 1 inizio esecuzione" << std::endl;
+	std::cout << "- Task 1 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -50,7 +63,7 @@ void task1()
 	busy_wait(18);
 	#endif
 
-	std::cout << "- Task 1 termina esecuzione" << std::endl;
+	std::cout << "- Task 1 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -62,7 +75,7 @@ void task1()
 void task2()
 {
 	#ifdef START_TASK
-	std::cout << "- Task 2 inizio esecuzione" << std::endl;
+	std::cout << "- Task 2 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -73,7 +86,7 @@ void task2()
 	busy_wait(9);
 	#endif
 
-	std::cout << "- Task 2 termina esecuzione" << std::endl;
+	std::cout << "- Task 2 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -85,7 +98,7 @@ void task2()
 void task3()
 {
 	#ifdef START_TASK
-	std::cout << "- Task 3 inizio esecuzione" << std::endl;
+	std::cout << "- Task 3 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -96,7 +109,7 @@ void task3()
 	busy_wait(9);
 	#endif
 
-	std::cout << "- Task 3 termina esecuzione" << std::endl;
+	std::cout << "- Task 3 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -108,7 +121,7 @@ void task3()
 void task4()
 {
 	#ifdef START_TASK
-	std::cout << "- Task 4 inizio esecuzione" << std::endl;
+	std::cout << "- Task 4 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -119,7 +132,7 @@ void task4()
 	busy_wait(9);
 	#endif
 
-	std::cout << "- Task 4 termina esecuzione" << std::endl;
+	std::cout << "- Task 4 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
@@ -133,7 +146,7 @@ void task4()
 void ap_task()
 {
 	#ifdef START_TASK
-	std::cout << "- Task Aperiodico inizio esecuzione" << std::endl;
+	std::cout << "- Task Aperiodico inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -144,7 +157,7 @@ void ap_task()
 	busy_wait(18);
 	#endif
 
-	std::cout << "- Task Aperiodico termina esecuzione" << std::endl;
+	std::cout << "- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();

@@ -161,7 +161,7 @@ void Executive::exec_function()
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 				if(p_tasks[frames[frame_id][i]].my_status == IDLE){
 					if (rt::get_priority(p_tasks[frames[frame_id][i]].thread) == rt::priority::rt_min + frame_length - frames[frame_id][i] ){
-						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //riacquisisco la priorità
+						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //riacquisisco la priorità se è tornato in IDLE -> se ha finito
 					}
 					slack_time+=p_tasks[frames[frame_id][i]].wcet;
 

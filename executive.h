@@ -7,6 +7,7 @@
 #include <thread>
 #include <iostream>
 #include <sstream>
+#include <random>
 #include <mutex>
 #include <condition_variable>
 #include "rt/priority.h"
