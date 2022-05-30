@@ -62,9 +62,20 @@ void Executive::run()
 		--prio;
 	}
 
-	//assert(ap_task.function); // Fallisce se set_aperiodic_task() non e' stato invocato
+	assert(ap_task.function); // Fallisce se set_aperiodic_task() non e' stato invocato
+	ap_task.thread = std::thread(&Executive::task_function, std::ref(ap_task), std::ref(mutex));
 
-	//ap_task.thread = std::thread(&Executive::task_function, std::ref(ap_task));
+	
+
+	rt::set_affinity(ap_task.thread, af);
+
+	try {
+		rt::set_priority(ap_task.thread, rt::priority::rt_min);
+	}
+	catch(rt::permission_error & e) {
+		std::cout << "Failed to set priority " << e.what() << std::endl;
+	}
+	
 
 	//imposto la priorità massima all'executive e l'affinity 1 (lavoreranno su un processore)
 	std::thread exec_thread(&Executive::exec_function, this);
@@ -85,7 +96,7 @@ void Executive::run()
 
 	exec_thread.join();
 
-	//ap_task.thread.join();
+	ap_task.thread.join();
 
 	for (auto & pt: p_tasks)
 		pt.thread.join();
@@ -94,6 +105,8 @@ void Executive::run()
 void Executive::ap_task_request()
 {
 	/* ... */
+	ap_task.my_status = IDLE;
+
 }
 
 void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
@@ -120,12 +133,10 @@ void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 void Executive::exec_function()
 {
 	unsigned int frame_id = 0;
-	unsigned int frame_id_prec = 0;
 	unsigned int slack_time = 0;
 
 	/* ... */
 
-	//imposto il clock dell'executive
 	auto point = std::chrono::steady_clock::now();
 	auto base_point = std::chrono::high_resolution_clock::now();;
 	auto start = std::chrono::high_resolution_clock::now();
@@ -139,10 +150,15 @@ void Executive::exec_function()
 		
 		{
 			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
-			std::cout << "Frame " << frame_id << ":" << std::endl;
+
+			std::cout << "Frame " << frame_id << std::endl;
+			std::cout << "Previsti i task: ";
+			for(unsigned int i = 0; i < frames[frame_id].size(); ++i)
+				std::cout << "{" << frames[frame_id][i] << "} ";
+			std::cout << std::endl;
+
 
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
-				
 				if(p_tasks[frames[frame_id][i]].my_status == IDLE){
 					if (rt::get_priority(p_tasks[frames[frame_id][i]].thread) == rt::priority::rt_min ){
 						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //riacquisisco la priorità
@@ -151,7 +167,9 @@ void Executive::exec_function()
 
 					auto checkpoint = std::chrono::high_resolution_clock::now();
 					std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
-					std::cout << "Thread " << frames[frame_id][i] << " - Release: " << elapsed.count() << std::endl;
+					std::cout << "Thread: " << frames[frame_id][i] << 
+					" -Release: " << elapsed.count() << 
+					" -Priority: "<< rt::get_priority(p_tasks[frames[frame_id][i]].thread) << std::endl;
 					//std::cout << "    WCETTONE NAZIONALE: " << p_tasks[frames[frame_id][i]].wcet <<std::endl;
 					
 					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Metto il task nello stato di RUNNING
@@ -173,34 +191,33 @@ void Executive::exec_function()
 		std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
 
 		/* Controllo delle deadline ... */
+		{
+			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
+
+		
+			std::cout << "-> Controllo rispetto deadline nel frame precedente:" << std::endl;
+			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
+				if(p_tasks[frames[frame_id][i]].my_status == RUNNING){ //controllo se i task hanno finito nel frame precedente
+					std::cout << "   Task " << frames[frame_id][i] <<" Deadline Miss: " << std::endl;
+
+					try {
+						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_min + frame_length - frames[frame_id][i]);
+						//I task con priorità rt::priority::rt_min + frame_length - frames[frame_id][i] hanno avuto una deadline miss
+					}
+					catch(rt::permission_error & e) {
+						std::cout << "Failed to set priority " << e.what() << std::endl;
+					}
+
+				}
+			}
+		}
 
 		if (++frame_id == frames.size()){
 			frame_id = 0;
 		}
 		slack_time = 0;
 
-		std::cout << "-> Controllo rispetto deadline nel frame precedente:" << std::endl;
-		if (frame_id != 0){
-			frame_id_prec = frame_id-1;
-		}
-		else{
-			frame_id_prec = 4;
-		}
 
-		for(unsigned int i = 0; i < frames[frame_id_prec].size(); ++i) {
-			if(p_tasks[frames[frame_id_prec][i]].my_status == RUNNING){ //controllo se i task hanno finito nel frame precedente
-				std::cout << "   Task " << frames[frame_id_prec][i] <<" Deadline Miss: " << std::endl;
-
-				try {
-					rt::set_priority(p_tasks[frames[frame_id_prec][i]].thread, rt::priority::rt_min + frames[frame_id][i]); //setto la priorità del task con deadline miss al minimo in modo da non intaccare l'esecuzione degli altri task
-					//std::cout<<"ho messo priorità minima"<<std::endl;
-				}
-				catch(rt::permission_error & e) {
-					std::cout << "Failed to set priority " << e.what() << std::endl;
-				}
-
-			}
-		}
 		#ifdef DEBUG
 		auto stop = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double, std::milli> elapsed(stop - start);

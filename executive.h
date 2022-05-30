@@ -65,8 +65,6 @@ class Executive
 			/* ... */
 		};
 		std::mutex mutex;
-		std::mutex mutexxone;
-
 
 		std::vector<task_data> p_tasks;
 		task_data ap_task;

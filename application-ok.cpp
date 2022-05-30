@@ -6,6 +6,12 @@
 //#define DEBUG
 
 Executive exec(5, 4);
+/*
+std::random_device rd;							// inizializzazione
+std::mt19937 gen(rd());							// generatore 
+std::uniform_int_distribution<> dis(0, 4);		// random
+unsigned int rand_gen = (int) dis(gen);			//
+*/
 
 void task0()
 {
@@ -18,7 +24,7 @@ void task0()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(9);
+	busy_wait(78);
 	#endif
 
 	std::cout << "- Task 0 termina esecuzione" << std::endl;
@@ -126,7 +132,25 @@ void task4()
 
 void ap_task()
 {
-	/* Custom Code */
+	#ifdef START_TASK
+	std::cout << "- Task Aperiodico inizio esecuzione" << std::endl;
+	#endif
+
+	#ifdef DEBUG
+	auto start = std::chrono::high_resolution_clock::now();
+	#endif
+
+	#ifdef BUSY_WAIT_GENERATION
+	busy_wait(18);
+	#endif
+
+	std::cout << "- Task Aperiodico termina esecuzione" << std::endl;
+
+	#ifdef DEBUG
+	auto stop = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> elapsed(stop - start);
+	std::cout << "-- Task 4	Elapsed [ms]: " << elapsed.count() << std::endl;
+	#endif
 }
 
 int main()
@@ -140,7 +164,7 @@ int main()
 	exec.set_periodic_task(4, task4, 1); // tau_3,3
 	/* ... */
 
-	//exec.set_aperiodic_task(ap_task, 2);
+	exec.set_aperiodic_task(ap_task, 2);
 
 	exec.add_frame({0,1,2});
 	exec.add_frame({0,3});
