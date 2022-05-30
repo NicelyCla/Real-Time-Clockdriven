@@ -105,7 +105,7 @@ void Executive::run()
 void Executive::ap_task_request()
 {
 	/* ... */
-	ap_task.my_status = IDLE;
+	ap_task.my_status = PENDING;
 
 }
 
@@ -135,6 +135,9 @@ void Executive::exec_function()
 	unsigned int frame_id = 0;
 	unsigned int slack_time = 0;
 
+	rt::priority min_priority_frame(rt::priority::rt_min); //mi serve per ottenere il valore minimo di priorità all'interno dei task del frame
+
+
 	/* ... */
 
 	auto point = std::chrono::steady_clock::now();
@@ -153,16 +156,21 @@ void Executive::exec_function()
 
 			std::cout << "Frame " << frame_id << std::endl;
 			std::cout << "Previsti i task: ";
-			for(unsigned int i = 0; i < frames[frame_id].size(); ++i)
+			for(unsigned int i = 0; i < frames[frame_id].size(); ++i){
 				std::cout << "{" << frames[frame_id][i] << "} ";
+				min_priority_frame = rt::get_priority(p_tasks[frames[frame_id][i]].thread) - 1; //l'ultimo valore che rimane è la priorità minima presente nel frame
+
+			}
 			std::cout << std::endl;
 
-
+			//Scheduling Task Periodici:
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 				if(p_tasks[frames[frame_id][i]].my_status == IDLE){
+
 					if (rt::get_priority(p_tasks[frames[frame_id][i]].thread) == rt::priority::rt_min + frame_length - frames[frame_id][i] ){
 						rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_max-1-frames[frame_id][i]); //riacquisisco la priorità se è tornato in IDLE -> se ha finito
 					}
+
 					slack_time+=p_tasks[frames[frame_id][i]].wcet;
 
 					auto checkpoint = std::chrono::high_resolution_clock::now();
@@ -179,11 +187,24 @@ void Executive::exec_function()
 					//std::cout << "La priorità del task " << frames[frame_id][i] << ": " << rt::get_priority(p_tasks[frames[frame_id][i]].thread) <<std::endl;
 				}	
 			}
-			slack_time = frame_length * unit_time.count() - slack_time;
+			slack_time = frame_length * unit_time.count() - slack_time; //slacktime rimanente
 
+			//Scheduling Task Aperiodico:
+			if (ap_task.my_status != IDLE && slack_time > 0) { //aspetto che l'aperiodico sia pronto per partire
+
+				rt::set_priority(ap_task.thread, min_priority_frame); //riacquisisco la priorità se è tornato in IDLE -> se ha finito
+
+				auto checkpoint = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
+				std::cout << "Thread Aperiodico" << 
+				" -Release: " << elapsed.count() << 
+				" -Priority: "<< rt::get_priority(ap_task.thread) << std::endl;
+
+				ap_task.cond.notify_one();
+				ap_task.my_status = RUNNING;
+			}
 		}
 		std::cout << "slaccone nazionale: " << slack_time <<std::endl;
-
 
 
 		/* Attesa fino al prossimo inizio frame ... */
@@ -192,9 +213,8 @@ void Executive::exec_function()
 
 		/* Controllo delle deadline ... */
 		{
-			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
+			std::unique_lock<std::mutex> lock(mutex);
 
-		
 			std::cout << "-> Controllo rispetto deadline nel frame precedente:" << std::endl;
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 				if(p_tasks[frames[frame_id][i]].my_status == RUNNING){ //controllo se i task hanno finito nel frame precedente

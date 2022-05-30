@@ -18,7 +18,7 @@ unsigned int count = 0;							//
 void task0()
 {
 	#ifdef START_TASK
-	std::cout << "- Task 0 inizio esecuzione" << std::endl;
+	std::cout << "- Task 0 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -26,11 +26,14 @@ void task0()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(78);
+	busy_wait(9);
 	#endif
 
+	std::cout << "- Task 0 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+
+	
 	// Decommentare uno dei due "if".
-	if(++count % 2 != 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
+	if(++count % 5 == 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
 	//if(++count == rand_gen) {						// ap_ task lanciato in modo randomico;
 		std::cout << "	Lancio ap_task_request() in modo random " << std::endl;
 
@@ -40,8 +43,8 @@ void task0()
 
 		std::cout << "	Prossimo lancio generato in modo random[rand_gen]: " << rand_gen << std::endl;
 	}
+	
 
-	std::cout << "- Task 0 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> elapsed(stop - start);
@@ -146,7 +149,7 @@ void task4()
 void ap_task()
 {
 	#ifdef START_TASK
-	std::cout << "- Task Aperiodico inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "-- Task Aperiodico inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 	#endif
 
 	#ifdef DEBUG
@@ -157,7 +160,7 @@ void ap_task()
 	busy_wait(18);
 	#endif
 
-	std::cout << "- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "-- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
 	auto stop = std::chrono::high_resolution_clock::now();
