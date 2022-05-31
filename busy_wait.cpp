@@ -11,7 +11,7 @@ static unsigned int busy_wait_impl(unsigned int max_millisec, unsigned int max_c
 
 	while (cycles < max_cycles && std::chrono::high_resolution_clock::now() < stop_time)
 		++cycles;
-		
+
 	return cycles;
 }
 
@@ -23,12 +23,12 @@ void busy_wait_init()
 {
 	unsigned int sum = 0;
 	unsigned int i;
-	
+
 	for (i=0; i<10; ++i)
 	{
 		sum += busy_wait_impl(100, 0xFFFFFFFF);
 	}
-	
+
 	millisec_cycles = sum / 10 / 100;
 }
 
@@ -37,6 +37,3 @@ void busy_wait(unsigned int millisec)
 {
 	busy_wait_impl(100000, millisec * millisec_cycles);
 }
-
-
-

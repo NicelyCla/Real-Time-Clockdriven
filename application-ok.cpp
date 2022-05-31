@@ -2,13 +2,12 @@
 #include "busy_wait.h"
 
 #define BUSY_WAIT_GENERATION
-#define START_TASK
-//#define DEBUG
+#define DEBUG
 
 Executive exec(5, 4);
 
 std::random_device rd;							// inizializzazione
-std::mt19937 gen(rd());							// generatore 
+std::mt19937 gen(rd());							// generatore
 std::uniform_int_distribution<> dis(0, 4);		// random
 unsigned int rand_gen = (int) dis(gen);			//
 unsigned int count = 0;							//
@@ -17,23 +16,21 @@ unsigned int count = 0;							//
 
 void task0()
 {
-	#ifdef START_TASK
 	std::cout << "- Task 0 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(9);
+		busy_wait(8);
 	#endif
 
 	std::cout << "- Task 0 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	
 	// Decommentare uno dei due "if".
-	if(++count % 5 == 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
+	if(++count % 3 == 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
 	//if(++count == rand_gen) {						// ap_ task lanciato in modo randomico;
 		std::cout << "	Lancio ap_task_request() in modo random " << std::endl;
 
@@ -45,102 +42,95 @@ void task0()
 	}
 	
 
+
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 0	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task 0	Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 
 void task1()
 {
-	#ifdef START_TASK
 	std::cout << "- Task 1 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(18);
+		busy_wait(16);
 	#endif
 
 	std::cout << "- Task 1 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 1	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task 1	Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 
 void task2()
 {
-	#ifdef START_TASK
 	std::cout << "- Task 2 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(9);
+		busy_wait(8);
 	#endif
 
 	std::cout << "- Task 2 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 2	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task 2	Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 
 void task3()
 {
-	#ifdef START_TASK
 	std::cout << "- Task 3 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(9);
+		busy_wait(8);
 	#endif
 
 	std::cout << "- Task 3 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 3	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task 3	Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 
 void task4()
 {
-	#ifdef START_TASK
 	std::cout << "- Task 4 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(9);
+		busy_wait(8);
 	#endif
 
 	std::cout << "- Task 4 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 4	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task 4	Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 
@@ -148,24 +138,22 @@ void task4()
 
 void ap_task()
 {
-	#ifdef START_TASK
 	std::cout << "-- Task Aperiodico inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
-	#endif
 
 	#ifdef DEBUG
-	auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-	busy_wait(18);
+		busy_wait(78);
 	#endif
 
 	std::cout << "-- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
 
 	#ifdef DEBUG
-	auto stop = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed(stop - start);
-	std::cout << "-- Task 4	Elapsed [ms]: " << elapsed.count() << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> elapsed(stop - start);
+		std::cout << "-- Task Aperiodico Elapsed [ms]: " << elapsed.count() << std::endl;
 	#endif
 }
 

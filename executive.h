@@ -66,6 +66,7 @@ class Executive
 			/* ... */
 		};
 		std::mutex mutex;
+		bool release_aperiodic;
 
 		std::vector<task_data> p_tasks;
 		task_data ap_task;
