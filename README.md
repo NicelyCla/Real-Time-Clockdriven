@@ -7,7 +7,6 @@ You need to compile the file with the make command. <br>
 for a correct priority setting all executables must be run with sudo. <br>
 
 Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. 
-This will create an infinite loop that will force the processor to raise its clock.<br>
 
 Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execerr_pion and causing deadline misses in some periodic task.<br>
 
@@ -21,3 +20,4 @@ Depending on the machine on which it is launched, it is possible from time to ti
 yes > /dev/null
 
 ------------------------------------
+This will create an infinite loop that will force the processor to raise its clock.<br>
