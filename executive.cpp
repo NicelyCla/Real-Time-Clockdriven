@@ -4,7 +4,7 @@
 #include <ctime>
 
 #define DEBUG
-//#define SLACK_STEALING_ON
+#define SLACK_STEALING_ON //commentare per la versione senza slack stealing
 
 Executive::Executive(size_t num_tasks, unsigned int frame_length, unsigned int unit_duration)
 	: p_tasks(num_tasks), frame_length(frame_length), unit_time(unit_duration)
@@ -126,7 +126,8 @@ void Executive::ap_task_request()
 			#ifndef SLACK_STEALING_ON
 				rt::set_priority(ap_task.thread, rt::priority::rt_min-1);
 			#else
-				rt::set_priority(ap_task.thread, rt::priority::rt_max-1);
+				rt::set_priority(ap_task.thread, rt::priority::rt_min+p_tasks.size()+1); //priorità bassa più alta dei task aperiodici
+				//quando l'aperiodico ha priorità rt_min+p_tasks.size()+1 vuol dire che è andato in deadline
 			#endif
 
 		}
@@ -151,12 +152,6 @@ void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 
 		}
 
-		//std::cout << " Esecuzione n: " << count << std::endl;
-		/*
-		mtx.lock();
-		task.my_status = RUNNING;
-		mtx.unlock();
-		*/
 		task.function();								// RUNNING : task in esecuzione
 		std::unique_lock<std::mutex> l(mtx); //cambio di stato in regione critica
 		task.my_status = IDLE;							// IDLE : in questo caso definisce il completamento dell'esecuzione
@@ -216,21 +211,24 @@ void Executive::exec_function()
 
 					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Task pronto per l'esecuzione
 					p_tasks[frames[frame_id][i]].cond.notify_one();				// Notifico il task
-					//p_tasks[frames[frame_id][i]].my_status = RUNNING;
 
 					//std::cout << "La priorità del task " << frames[frame_id][i] << ": " << rt::get_priority(p_tasks[frames[frame_id][i]].thread) <<std::endl;
 				}
 			}
+			
 			slack_time = frame_length * unit_time.count() - slack_time; //slacktime rimanente
+			std::cout << "slaccone nazionale: " << slack_time <<std::endl;
 
 			//Scheduling Task Aperiodico:
-			if (ap_task.my_status == IDLE && slack_time > 0 && release_aperiodic) {
+			if (ap_task.my_status == IDLE && slack_time > 0 && release_aperiodic) { //recupero la priorità di default se il task con deadline ha terminato
 				#ifndef SLACK_STEALING_ON
 					if (rt::get_priority(ap_task.thread) == rt::priority::rt_min-1){
 						rt::set_priority(ap_task.thread, rt::priority::rt_min);
 					}
 				#else
-					std::cout<<"gestione da fare";
+					if (rt::get_priority(ap_task.thread) == rt::priority::rt_min+p_tasks.size()+1){
+						rt::set_priority(ap_task.thread, rt::priority::rt_max-1);
+					}
 				#endif
 
 
@@ -247,12 +245,61 @@ void Executive::exec_function()
 				release_aperiodic = false;
 			}
 		}
-		std::cout << "slaccone nazionale: " << slack_time <<std::endl;
 
 
 		/* Attesa fino al prossimo inizio frame ... */
-		point += std::chrono::milliseconds(frame_length * unit_time); //imposta ogni quanti millisecondisecondi deve ripetersi
-		std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
+
+		#ifndef SLACK_STEALING_ON
+			point += std::chrono::milliseconds(frame_length * unit_time); //imposta ogni quanti millisecondisecondi deve ripetersi
+			std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
+		#else
+			if (slack_time > 0 && (ap_task.my_status == PENDING || ap_task.my_status == RUNNING) && rt::get_priority(ap_task.thread) != rt::priority::rt_min+p_tasks.size()+1){
+				//entro qui qualora ci sia slack_time disponibile, il task sia stato notificato //e se non ha avuto una deadline
+
+				//per questo quanto di tempo la priorità è massima rispetto a tutti gli altri task
+				try {
+					rt::set_priority(ap_task.thread, rt::priority::rt_max-1);
+				}
+				catch(rt::permission_error & e) {
+					std::cout << "Failed to set priority " << e.what() << std::endl;
+				}
+
+				#ifdef DEBUG
+					std::ostringstream slack;
+					slack << "	AperiodicTask Start partial slack stealing	slack_time: " << slack_time << std::endl;
+					std::cout << slack.str();
+				#endif
+				
+				//partiziono la priorità dell'aperiodico all'interno del frame in modo da dedicare (slack_time)-quanti di tempo al task aperiodico.
+				//NB slack_time tiene già conto dello unit_time
+
+				point += std::chrono::milliseconds(slack_time); //imposta ogni quanti millisecondisecondi deve ripetersi
+				std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
+
+				#ifdef DEBUG
+					std::ostringstream ap_task_frame;
+					ap_task_frame << "	AperiodicTask Elapsed partial slack stealing [ms]: " << slack_time * unit_time.count() <<  std::endl;
+					std::cout << ap_task_frame.str();
+				#endif
+
+				//allo scadere del partizionamento in cui l'aperiodico ha priorità massima, pongo una priorità inferiore rispetto al frame residuo
+				try {
+					rt::set_priority(ap_task.thread, rt::priority::rt_min);
+				}
+				catch(rt::permission_error & e) {
+					std::cout << "Failed to set priority " << e.what() << std::endl; 
+				}
+
+				//sleep per tutto il tempo residuo
+				point += std::chrono::milliseconds((frame_length* unit_time.count()) - slack_time);
+				std::this_thread::sleep_until(point);
+			}
+			else{
+				//qualora non ci siano ap_task in ballo, non c'è bisogno di partizionamento delle priorità
+				point += std::chrono::milliseconds(frame_length * unit_time); //imposta ogni quanti millisecondisecondi deve ripetersi
+				std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
+			}
+		#endif
 
 		/* Controllo delle deadline ... */
 		{
@@ -283,9 +330,18 @@ void Executive::exec_function()
 			}
 
 			//Controllo Deadline task aperiodico
-			if (rt::get_priority(ap_task.thread) == rt::priority::rt_min-1){
-				std::cout << "   Task Aperiodico Deadline Miss!" << std::endl;
-			}
+
+			#ifndef SLACK_STEALING_ON
+				if (rt::get_priority(ap_task.thread) == rt::priority::rt_min-1){
+					std::cout << "   Task Aperiodico Deadline Miss! (No Slack stealing)" << std::endl;
+					//la priorità viene già abbassata all'interno di ap_task_request
+				}
+			#else
+				if (rt::get_priority(ap_task.thread) == rt::priority::rt_min+p_tasks.size()+1){
+					std::cout << "   Task Aperiodico Deadline Miss! (Slack stealing)" << std::endl;
+					//la priorità viene già abbassata all'interno di ap_task_request
+				}
+			#endif
 
 		}
 

@@ -30,7 +30,7 @@ void task0()
 
 	
 	// Decommentare uno dei due "if".
-	if(++count % 3 == 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
+	if(++count % 6 == 0) {						// ap_task lanciato ogni 5 esecuzioni di task 0;
 	//if(++count == rand_gen) {						// ap_ task lanciato in modo randomico;
 		std::cout << "	Lancio ap_task_request() in modo random " << std::endl;
 
@@ -145,7 +145,7 @@ void ap_task()
 	#endif
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(78);
+		busy_wait(18);
 	#endif
 
 	std::cout << "-- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
