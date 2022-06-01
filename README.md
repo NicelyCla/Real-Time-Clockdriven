@@ -12,5 +12,9 @@ yes > /dev/null
 
 ------------------------------------
 This will create an infinite loop that will force the processor to raise its clock.<br><br>
+
 Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execerr_pion and causing deadline misses in some periodic task.<br><br>
 
+Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task. <br>
+by uncommenting the <b>#define SLACK_STEALING_ON</b> line, you can choose to use or not to use slack stealing. It serves to minimize the average response time of the aperiodic task.
+<br><br>
