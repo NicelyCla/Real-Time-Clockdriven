@@ -17,7 +17,7 @@ by uncommenting the <b>#define SLACK_STEALING_ON</b> line, you can choose to use
 Depending on the machine on which it is launched, it is possible from time to time to have some deadline misses also in application-ok, especially in laptops without mains power. This is due to power saving settings that lower the CPU clock. A trick to mitigate this problem is to launch a terminal with the following command:<br>
 
 ------------------------------------
-yes > /dev/null
+$ yes > /dev/null
 
 ------------------------------------
 This will create an infinite loop that will force the processor to raise its clock.<br>
