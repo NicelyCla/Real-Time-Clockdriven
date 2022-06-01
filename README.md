@@ -10,5 +10,6 @@ Launching <b><i>application-ok</i></b> will be show an optimal situation where t
 yes > /dev/null
 
 ------------------------------------
-This will create an infinite loop that will force the processor to raise its clock.
+This will create an infinite loop that will force the processor to raise its clock.<br><br>
+Launching <b><i>application-err_p</i></b> a deadline miss situation will be shown in periodic tasks, in this case a task is running too busy waiting compromising the execution and causing deadline misses in some periodic task.<br><br>
 
