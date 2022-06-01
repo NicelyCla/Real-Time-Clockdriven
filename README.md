@@ -13,7 +13,7 @@ Launching <b>sudo ./application-ok</b> will be show an optimal situation where t
 
 Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the the execution in the frame of some periodic task and causing deadline misses.<br>
 
-Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task. <br><br>
+Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task.<br>
 
 By uncommenting the <b>#define SLACK_STEALING_ON</b> line in executive.cpp, you can choose to use or not to use slack stealing. It serves to minimize the average response time of the aperiodic task.
 <br>
