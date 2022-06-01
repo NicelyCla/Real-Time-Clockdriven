@@ -1,5 +1,6 @@
 #ifndef EXECUTIVE_H
 #define EXECUTIVE_H
+#define APERIODIC -1
 
 #include <vector>
 #include <functional>
@@ -12,6 +13,7 @@
 #include <condition_variable>
 #include "rt/priority.h"
 #include "rt/affinity.h"
+
 
 
 class Executive
@@ -54,14 +56,12 @@ class Executive
 		struct task_data
 		{
 			std::function<void()> function;
-
 			std::condition_variable cond;
-
-			unsigned int wcet;
+			std::thread thread;
 			thread_status my_status;
 
-
-			std::thread thread;
+			unsigned int wcet;
+			int index;
 
 			/* ... */
 		};
