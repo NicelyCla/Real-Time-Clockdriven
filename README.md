@@ -1,6 +1,8 @@
 # Real-Time-Clockdriven
 ***
 Development of a clock-driven scheduling library using priority, affinity, multithreading and deadline control. The application works on a single processor core (affinity 1).
+<img src="https://github.com/NicelyCla/Real-Time-Clockdriven/blob/main/clock-driven-scheduling.png" alt="meta-learning">
+
 
 ## Application launch
 You need to compile the file with the make command. <br>
