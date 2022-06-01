@@ -5,12 +5,12 @@ Development of a clock-driven scheduling library using priority, affinity, multi
 ## Application launch
 You need to compile the file with the make command. <br>
 for a correct priority setting all executables must be run with sudo. <br>
-Launching <b><i>sudo ./application-ok</i></b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. Depending on the machine on which it is launched, it is possible from time to time to have some deadline misses, especially in laptops without mains power. This is due to power saving settings that lower the CPU clock. A trick to mitigate this problem is to launch a terminal with the following command:<br>
+Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. Depending on the machine on which it is launched, it is possible from time to time to have some deadline misses, especially in laptops without mains power. This is due to power saving settings that lower the CPU clock. A trick to mitigate this problem is to launch a terminal with the following command:<br>
 
 ------------------------------------
 yes > /dev/null
 
 ------------------------------------
 This will create an infinite loop that will force the processor to raise its clock.<br><br>
-Launching <b><i>sudo ./application-err_p</i></b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execerr_pion and causing deadline misses in some periodic task.<br><br>
+Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execerr_pion and causing deadline misses in some periodic task.<br><br>
 
