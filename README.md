@@ -4,7 +4,7 @@ Development of a clock-driven scheduling library using priority, affinity, multi
 
 ## Application launch
 You need to compile the file with the make command. <br>
-for a correct priority setting all executables must be run with sudo. <br><br>
+for a correct priority setting all executables must be run with sudo. <br>
 
 Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. 
 This will create an infinite loop that will force the processor to raise its clock.<br><br>
