@@ -28,7 +28,7 @@ for a correct priority setting all executables must be run with sudo. <br>
 
 Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. 
 
-Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the the execution in the frame of some periodic task and causing deadline misses.<br>
+Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execution of some periodic task in the frame and causing deadline misses.<br>
 
 Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task.<br>
 
