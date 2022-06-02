@@ -13,11 +13,11 @@ The tasks τ0, τ1, τ2, τ3, τ4  are given:
 The information necessary for the executive to manage the activation of the tasks is as follows: 
 - H = 20;
 - m = 4;
-- F1 = {τ0, τ1, τ2} 
-- F2 = {τ0, τ3}
+- F0 = {τ0, τ1, τ2} 
+- F1 = {τ0, τ3}
+- F2 = {τ0, τ1}
 - F3 = {τ0, τ1}
-- F4 = {τ0, τ1}
-- F5 = {τ1, τ2, τ4}.
+- F4 = {τ0, τ1, τ4}.
 
 Reference scheduling for this example:<br>
 ![](clock-driven-scheduling.png)
