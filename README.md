@@ -3,7 +3,7 @@
 Development of a clock-driven scheduling that allows to execute a set of periodic tasks and an aperiodic task. have been used priority, affinity, multithreading and deadline control. The application works on a single processor core (affinity 1).<br>
 The scheduling in the image was previously done using a static scheduling algorithm that provides the system with a feasible schedule, if exists.
 
-The tasks τ0, τ1, τ2, τ3, τ4  are given (τ3 has been partitioned into 3 sub-tasks):
+The tasks τ0, τ1, τ2, τ3, τ4  are given:
 - τ0 = (4, 1, 4)
 - τ1 = (5,2,7)
 - τ2 = (20,1, 20)
