@@ -1,6 +1,7 @@
 # Real-Time-Clockdriven
 ***
 Development of a clock-driven scheduling library using priority, affinity, multithreading and deadline control. The application works on a single processor core (affinity 1).<br>
+
 Reference scheduling for this example:<br>
 ![](clock-driven-scheduling.png)
 
