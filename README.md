@@ -1,6 +1,6 @@
 # Real-Time-Clockdriven
 ***
-Development of a clock-driven scheduling that allows to execute a set of periodic tasks and an aperiodic task. have been used priority, affinity, multithreading and deadline control. The application works on a single processor core (affinity 1).<br>
+Development of a clock-driven scheduling library that allows to execute a set of periodic tasks and an aperiodic task. have been used priority, affinity, multithreading and deadline control. The application works on a single processor core (affinity 1).<br>
 The scheduling in the image was previously done using a static scheduling algorithm that provides the system with a feasible schedule, if exists.
 
 The tasks τ0, τ1, τ2, τ3, τ4  are given:
