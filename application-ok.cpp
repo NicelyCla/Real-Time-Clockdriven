@@ -90,6 +90,11 @@ void ap_task()
 
 int main()
 {
+	if (getuid()){
+			std::cout<<"Need to start with sudo!"<<std::endl;
+			exit(-1);
+	}
+
 	busy_wait_init();
 	// wcet= tempo massimo di esecuzione previsto
 	exec.set_periodic_task(0, task0, 1); // tau_1

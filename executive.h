@@ -10,6 +10,8 @@
 #include <sstream>
 #include <random>
 #include <mutex>
+#include <unistd.h>
+#include <sys/types.h>
 #include <condition_variable>
 #include "rt/priority.h"
 #include "rt/affinity.h"
