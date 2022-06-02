@@ -71,7 +71,6 @@ void Executive::run()
 	std::thread exec_thread(&Executive::exec_function, this);
 	rt::set_affinity(exec_thread, af);
 	rt::set_priority(exec_thread, rt::priority::rt_max);
-	
 	/* ... */
 	exec_thread.join();
 	ap_task.thread.join();
@@ -116,7 +115,6 @@ void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 
 		std::unique_lock<std::mutex> l(mtx); //cambio di stato in regione critica
 		task.my_status = IDLE;				 // IDLE : in questo caso definisce il completamento dell'esecuzione
-
 	}
 }
 
@@ -133,18 +131,15 @@ void Executive::exec_function()
 		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
-
 	while (true)
 	{
 		/* Rilascio dei task periodici del frame corrente e aperiodico (se necessario)... */
 		//frame 0 istante 0 -> rilascio 0
-
 		{
 			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
 
 			std::cout << "Frame " << frame_id << std::endl << "Previsti i task: ";
-;
-			
+	
 			//stampo i task previsti e calcolo lo slack time
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i){
 				std::cout << "{" << frames[frame_id][i] << "} ";
@@ -172,7 +167,6 @@ void Executive::exec_function()
 						" -Priority: "<< rt::get_priority(p_tasks[frames[frame_id][i]].thread) << std::endl;
 					#endif
 
-
 					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Task pronto per l'esecuzione
 					p_tasks[frames[frame_id][i]].cond.notify_one();				// Notifico il task
 				}
@@ -188,7 +182,6 @@ void Executive::exec_function()
 					" -Release: " << elapsed.count() <<
 					" -Priority: "<< rt::get_priority(ap_task.thread) << std::endl;
 				#endif
-
 
 				ap_task.my_status = PENDING;
 				ap_task.cond.notify_one();
@@ -228,28 +221,25 @@ void Executive::exec_function()
 		#endif
 
 		/* Controllo delle deadline ... */
-		{
-			std::unique_lock<std::mutex> lock(mutex);
-
-			std::cout << "-> Controllo rispetto deadline nel frame precedente..." << std::endl;
-			//Controllo Deadline task periodici
-			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
-				if(p_tasks[frames[frame_id][i]].my_status != IDLE){ //controllo se i task hanno finito nel frame precedente
-					
-					std::cout << "   Task " << frames[frame_id][i] <<" Deadline Miss!" << std::endl;
-					rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_min + p_tasks.size() - frames[frame_id][i]);
-					//I task con priorità rt::priority::rt_min + frame_length - frames[frame_id][i] hanno avuto una deadline miss
-				}
+		
+		std::cout << "-> Controllo rispetto deadline nel frame precedente..." << std::endl;
+		//Controllo Deadline task periodici
+		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
+			if(p_tasks[frames[frame_id][i]].my_status != IDLE){ //controllo se i task hanno finito nel frame precedente
+				
+				std::cout << "   Task " << frames[frame_id][i] <<" Deadline Miss!" << std::endl;
+				rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_min + p_tasks.size() - frames[frame_id][i]);
+				//I task con priorità rt::priority::rt_min + frame_length - frames[frame_id][i] hanno avuto una deadline miss
 			}
+		}
 
-			//Controllo Deadline task aperiodico
-			if (release_aperiodic && ap_task.my_status != IDLE){
-				{
-					std::unique_lock<std::mutex> lock(mutex);
-					release_aperiodic = false;
-				}
-				std::cout << "   Task Aperiodico Deadline Miss!" << std::endl;
+		//Controllo Deadline task aperiodico
+		if (release_aperiodic && ap_task.my_status != IDLE){
+			{
+				std::unique_lock<std::mutex> lock(mutex);
+				release_aperiodic = false;
 			}
+			std::cout << "   Task Aperiodico Deadline Miss!" << std::endl;
 		}
 
 		if (++frame_id == frames.size()){
