@@ -1,3 +1,5 @@
+/*Claudio Praticò 340404, Giuseppe Gabriele Tarollo 343707*/
+
 #ifndef EXECUTIVE_H
 #define EXECUTIVE_H
 #define APERIODIC -1
@@ -61,6 +63,9 @@ class Executive
 			std::condition_variable cond;
 			std::thread thread;
 			thread_status my_status;
+
+			std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+
 
 			unsigned int wcet;
 			int index;

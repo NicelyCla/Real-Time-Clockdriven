@@ -1,92 +1,94 @@
+/*Claudio Praticò 340404, Giuseppe Gabriele Tarollo 343707*/
+
 #include "executive.h"
 #include "busy_wait.h"
 
 #define BUSY_WAIT_GENERATION
-#define N_AP_REQUEST 5
+#define N_MS 8 //In funzione della CPU utilizzata potrebbero verificarsi Deadline Miss, è possibile abbassare la busy waiting qui
 
 Executive exec(5, 4);
-/*
+
 std::random_device rd;							// inizializzazione
 std::mt19937 gen(rd());							// generatore
 std::uniform_int_distribution<> dis(0, 4);		// random
 unsigned int rand_gen = (int) dis(gen);	
-*/
+
 unsigned int count = 0;
 
 void task0()
 {
-	std::cout << "- Task 0 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 0 start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(8);
+		busy_wait(1*N_MS);
 	#endif
 
-	std::cout << "- Task 0 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 0 stop execution" << std::endl;
 
-	if(++count == N_AP_REQUEST) {					// ap_task lanciato ogni N_AP_REQUEST esecuzioni di task 0;
-	//if(++count == rand_gen) {						// ap_ task lanciato in modo randomico;
-		std::cout << "	Lancio ap_task_request()..." << std::endl;
-		exec.ap_task_request();
-		//rand_gen = dis(gen);						// random cambia ad ogni esecuzione di ap_task;
-		count = 0;
-	}
 }
 
 void task1()
 {
-	std::cout << "- Task 1 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 1 start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(16);
+		busy_wait(2*N_MS);
 	#endif
 
-	std::cout << "- Task 1 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 1 stop execution" << std::endl;
 }
 
 void task2()
 {
-	std::cout << "- Task 2 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 2 start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(8);
+		busy_wait(1*N_MS);
 	#endif
 
-	std::cout << "- Task 2 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 2 stop execution" << std::endl;
 }
 
 void task3()
 {
-	std::cout << "- Task 3 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 3 start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(8);
+		busy_wait(1*N_MS);
 	#endif
 
-	std::cout << "- Task 3 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	if(++count == rand_gen) {						// ap_ task lanciato in modo sporadico;
+		std::cout << "	Launching aperiodic request..." << std::endl;
+		exec.ap_task_request();
+		rand_gen = dis(gen);						// random cambia ad ogni esecuzione di ap_task;
+		count = 0;
+	}
+
+	std::cout << "- Task 3 stop execution" << std::endl;
 }
 
 void task4()
 {
-	std::cout << "- Task 4 inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 4 start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(8);
+		busy_wait(1*N_MS);
 	#endif
 
-	std::cout << "- Task 4 termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task 4 stop execution" << std::endl;
 }
 
 /* Nota: nel codice di uno o piu' task periodici e' lecito chiamare Executive::ap_task_request() */
 
 void ap_task()
 {
-	std::cout << "- Task Aperiodico inizio esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task Aperiodico start execution" << std::endl;
 
 	#ifdef BUSY_WAIT_GENERATION
-		busy_wait(16);
+		busy_wait(2*N_MS);
 	#endif
 
-	std::cout << "- Task Aperiodico termina esecuzione [Prio: "<< rt::this_thread::get_priority() <<"]" << std::endl;
+	std::cout << "- Task Aperiodico stop execution" << std::endl;
 }
 
 int main()

@@ -1,3 +1,5 @@
+/*Claudio Praticò 340404, Giuseppe Gabriele Tarollo 343707*/
+
 #include <cassert>
 #include "executive.h"
 
@@ -100,6 +102,12 @@ void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 
 		#ifdef DEBUG
 			auto start = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> release(start - task.start_time);
+			if(task.index != APERIODIC)
+				std::cout << "- Task " << task.index << " " << "Effective Realease: " << release.count() << " [Prio: " << rt::get_priority(task.thread) << "]"<< std::endl;
+			else
+				std::cout << "- Task Ap Effective Realease: " << release.count() << " [Prio: " << rt::get_priority(task.thread) << "]"<< std::endl;
+
 		#endif
 
 		task.function();
@@ -110,7 +118,7 @@ void Executive::task_function(Executive::task_data & task, std::mutex &mtx)
 			if(task.index != APERIODIC)
 				std::cout << "- Task " << task.index << " " << "Elapsed [ms]: " << elapsed.count() << std::endl;
 			else
-				std::cout << "- Task Aperiodico Elapsed [ms]: " << elapsed.count() << std::endl;
+				std::cout << "- Task Ap Elapsed [ms]: " << elapsed.count() << std::endl;
 		#endif
 
 		std::unique_lock<std::mutex> l(mtx); //cambio di stato in regione critica
@@ -131,6 +139,11 @@ void Executive::exec_function()
 		auto start = std::chrono::high_resolution_clock::now();
 	#endif
 
+	for (auto & pt: p_tasks){
+		pt.start_time = std::chrono::high_resolution_clock::now();
+	}
+	ap_task.start_time = std::chrono::high_resolution_clock::now();
+
 	while (true)
 	{
 		/* Rilascio dei task periodici del frame corrente e aperiodico (se necessario)... */
@@ -138,7 +151,7 @@ void Executive::exec_function()
 		{
 			std::unique_lock<std::mutex> lock(mutex); //non posso fidarmi solo della priorità massima dell'executive, utilizzo un mutex
 
-			std::cout << "Frame " << frame_id << std::endl << "Previsti i task: ";
+			std::cout << "Frame " << frame_id << std::endl << "Expected tasks: ";
 	
 			//stampo i task previsti e calcolo lo slack time
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i){
@@ -150,7 +163,7 @@ void Executive::exec_function()
 			std::cout << std::endl;
 			
 			slack_time = frame_length * unit_time.count() - slack_time; //slacktime rimanente
-			std::cout << "Slack Time: " << slack_time <<std::endl;
+			//std::cout << "Slack Time: " << slack_time <<std::endl;
 
 			//Scheduling Task Periodici:
 			for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
@@ -163,8 +176,7 @@ void Executive::exec_function()
 						auto checkpoint = std::chrono::high_resolution_clock::now();
 						std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
 						std::cout << "Thread: " << frames[frame_id][i] <<
-						" -Release: " << elapsed.count() <<
-						" -Priority: "<< rt::get_priority(p_tasks[frames[frame_id][i]].thread) << std::endl;
+						" -Request for release: " << elapsed.count() << std::endl;
 					#endif
 
 					p_tasks[frames[frame_id][i]].my_status = PENDING;			// Task pronto per l'esecuzione
@@ -178,9 +190,8 @@ void Executive::exec_function()
 				#ifdef DEBUG
 					auto checkpoint = std::chrono::high_resolution_clock::now();
 					std::chrono::duration<double, std::milli> elapsed(checkpoint - base_point);
-					std::cout << "Thread Aperiodico" <<
-					" -Release: " << elapsed.count() <<
-					" -Priority: "<< rt::get_priority(ap_task.thread) << std::endl;
+					std::cout << "Thread Ap: " <<
+					" -Request for release: " << elapsed.count() << std::endl;
 				#endif
 
 				ap_task.my_status = PENDING;
@@ -192,7 +203,7 @@ void Executive::exec_function()
 		/* Attesa fino al prossimo inizio frame ... */
 
 		#ifndef SLACK_STEALING_ON
-			point += std::chrono::milliseconds(frame_length * unit_time); //imposta ogni quanti millisecondisecondi deve ripetersi
+			point += std::chrono::milliseconds(frame_length * unit_time);
 			std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
 		#else
 			if (slack_time > 0 && ap_task.my_status != IDLE){	//entro qui qualora ci sia slack_time disponibile, il task sia stato notificato //e se non ha avuto una deadline
@@ -201,9 +212,9 @@ void Executive::exec_function()
 				
 				//partiziono la priorità dell'aperiodico all'interno del frame in modo da dedicare (slack_time)-quanti di tempo al task aperiodico. NB slack_time tiene già conto dello unit_time
 
-				std::cout << "- Slack Stealing... " << std::endl; //[Prio: "<< rt::get_priority(ap_task.thread) <<"]" << std::endl; //evidenzia l'esecuzione del task aperiodico
-				point += std::chrono::milliseconds(slack_time); //imposta ogni quanti millisecondisecondi deve ripetersi
-				std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
+				std::cout << "- Slack Stealing... " << std::endl; 	//[Prio: "<< rt::get_priority(ap_task.thread) <<"]" << std::endl; //evidenzia l'esecuzione del task aperiodico
+				point += std::chrono::milliseconds(slack_time); 	//imposta ogni quanti millisecondisecondi deve ripetersi
+				std::this_thread::sleep_until(point);				// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
 
 				//allo scadere del partizionamento in cui l'aperiodico ha priorità massima, pongo una priorità inferiore rispetto al frame residuo
 				rt::set_priority(ap_task.thread, rt::priority::rt_min);
@@ -220,7 +231,7 @@ void Executive::exec_function()
 		#endif
 
 		/* Controllo delle deadline ... */
-		std::cout << "-> Controllo rispetto deadline nel frame precedente..." << std::endl;
+		std::cout << "-> Checking Deadline..." << std::endl;
 
 		//Controllo Deadline task periodici
 		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
@@ -237,7 +248,7 @@ void Executive::exec_function()
 				std::unique_lock<std::mutex> lock(mutex);
 				release_aperiodic = false;
 			}
-			std::cout << "   Task Aperiodico Deadline Miss!" << std::endl;
+			std::cout << "   Task Ap Deadline Miss!" << std::endl;
 		}
 
 		if (++frame_id == frames.size()){
