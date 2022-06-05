@@ -197,12 +197,11 @@ void Executive::exec_function()
 		#else
 			if (slack_time > 0 && ap_task.my_status != IDLE){	//entro qui qualora ci sia slack_time disponibile, il task sia stato notificato //e se non ha avuto una deadline
 
-				//per questo quanto di tempo la priorità è massima rispetto a tutti gli altri task
 				rt::set_priority(ap_task.thread, rt::priority::rt_max-1);
 				
-				//partiziono la priorità dell'aperiodico all'interno del frame in modo da dedicare (slack_time)-quanti di tempo al task aperiodico.
-				//NB slack_time tiene già conto dello unit_time
+				//partiziono la priorità dell'aperiodico all'interno del frame in modo da dedicare (slack_time)-quanti di tempo al task aperiodico. NB slack_time tiene già conto dello unit_time
 
+				std::cout << "- Slack Stealing... " << std::endl; //[Prio: "<< rt::get_priority(ap_task.thread) <<"]" << std::endl; //evidenzia l'esecuzione del task aperiodico
 				point += std::chrono::milliseconds(slack_time); //imposta ogni quanti millisecondisecondi deve ripetersi
 				std::this_thread::sleep_until(point);			// l'executive va in sleep per tutta la durata effettiva del frame, temporizzazione in modo assoluto
 
@@ -221,15 +220,14 @@ void Executive::exec_function()
 		#endif
 
 		/* Controllo delle deadline ... */
-		
 		std::cout << "-> Controllo rispetto deadline nel frame precedente..." << std::endl;
+
 		//Controllo Deadline task periodici
 		for(unsigned int i = 0; i < frames[frame_id].size(); ++i) {
 			if(p_tasks[frames[frame_id][i]].my_status != IDLE){ //controllo se i task hanno finito nel frame precedente
 				
 				std::cout << "   Task " << frames[frame_id][i] <<" Deadline Miss!" << std::endl;
-				rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_min + p_tasks.size() - frames[frame_id][i]);
-				//I task con priorità rt::priority::rt_min + frame_length - frames[frame_id][i] hanno avuto una deadline miss
+				rt::set_priority(p_tasks[frames[frame_id][i]].thread, rt::priority::rt_min + p_tasks.size() - frames[frame_id][i]); //I task con priorità rt::priority::rt_min + frame_length - frames[frame_id][i] hanno avuto una deadline miss
 			}
 		}
 
