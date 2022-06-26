@@ -26,11 +26,11 @@ Reference scheduling for this example:<br>
 You need to compile the file with the make command. <br>
 for a correct priority setting all executables must be run with sudo. <br>
 
-Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. 
+* Launching <b>sudo ./application-ok</b> will be show an optimal situation where there should be no deadline miss and the tasks will be optimally scheduled. 
 
-Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execution of some periodic task in the frame and causing deadline misses.<br>
+* Launching <b>sudo ./application-err_p</b> will be shown a deadline miss situation in periodic tasks, in this case a task is running too busy waiting compromising the execution of some periodic task in the frame and causing deadline misses.<br>
 
-Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task.<br>
+* Launching <b>sudo ./application-err_a</b> will be shown a deadline miss situation in the aperiodic task, the aperiodic task is called every so often during the execution of a periodic task. If a release of the periodic is requested without terminating the previous execution, there is a deadline miss of the aperiodic task.<br>
 
 By uncommenting the <b>#define SLACK_STEALING_ON</b> line in executive.cpp, you can choose to use slack stealing. It serves to minimize the average response time of the aperiodic task.
 <br>
